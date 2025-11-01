@@ -1,5 +1,6 @@
 #include "arguments.hpp"
 
+
 void Arguments::help() const {
     std::cout << "Usage: dns -s server [-p port] -f filter_file\n"
               << "Options:\n"
@@ -22,6 +23,7 @@ Arguments::Arguments(int argc, char* argv[]) {
             if (i + 1 < argc) {
                 int parsed = std::stoi(argv[++i]);
                 if (parsed < 1 || parsed > 65535) {
+                    // Port range check
                     throw std::invalid_argument("Invalid port number. Must be between 1 and 65535.");
                 }
                 port = parsed;
@@ -34,6 +36,8 @@ Arguments::Arguments(int argc, char* argv[]) {
         } else if (arg == "-h") {
             help();
             exit(0);
+        } else if (arg == "-v"){
+            verbose = true;
         } else {
             throw std::invalid_argument("Invalid argument. Use -h for help.");
         }
@@ -50,12 +54,14 @@ void Arguments::resolve_address() {
     // Check if address is already a valid IPv4 address
     if (inet_pton(AF_INET, address.c_str(), &(sa.sin_addr)) == 1) {
         printf_debug("Address is already a valid IPv4 address\n");
+        resolved_address = address;
         return;
     }
 
+  
     struct addrinfo hints = {}, *res;
     hints.ai_family = AF_INET; // Handles just IPv4
-    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_socktype = SOCK_DGRAM;
 
     if (getaddrinfo(address.c_str(), nullptr, &hints, &res) != 0) {
         throw std::invalid_argument("Invalid server address: " + address);
@@ -64,12 +70,11 @@ void Arguments::resolve_address() {
     // Save the resolved address into the address string
     char address[INET_ADDRSTRLEN];
     if (inet_ntop(AF_INET, &(((struct sockaddr_in*)res->ai_addr)->sin_addr), address, INET_ADDRSTRLEN) == nullptr) {
-        std::cerr << "Error: Failed to convert resolved address to string.\n";
+        printf_debug("Failed to convert resolved address to string.");
         freeaddrinfo(res);
         throw std::invalid_argument("Address resolution failed.");
     }
     resolved_address = address;
-    // printf_debug("Resolved address: %s\n", resolved_address.c_str());
     freeaddrinfo(res);
 }
 
@@ -83,6 +88,7 @@ void Arguments::printargs() const {
 void Arguments::print_blocked_domains() const {
     printf_debug("Blocked domains:");
     for (const auto& domain : blocked_domains) {
+        if (!gverbose) (void)domain;
         printf_debug(" - %s", domain.c_str());
     }
 }
@@ -95,6 +101,7 @@ void Arguments::load_domains(const std::string& filename) {
     }
 
     std::string line;
+    // Goes thrue every line and if they are not comments or empty saves them to the blocked_domains vector
     while (std::getline(file, line)) {
 
         if (line.empty() || line[0] == '#') continue;

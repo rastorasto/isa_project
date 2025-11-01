@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "macro.hpp"
+#include <algorithm>
 
 // DNS Question Structure
 struct DNSQuestion {
@@ -24,6 +25,7 @@ struct DNSMessage {
     DNSQuestion question;
 };
 
+// parses dns query and returns the parsed query at DNSMessage structure
 DNSMessage parse_dns_query(const uint8_t* buffer, size_t len);
+// function that checks if the domain name is blocked
 bool domain_blocked(std::string qname, const std::vector<std::string>& blocked_domains);
-bool check_domain(std::string domain);

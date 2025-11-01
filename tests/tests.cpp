@@ -3,6 +3,8 @@
 #include "arguments.hpp"
 #include "dnsmessage.hpp"
 
+bool gverbose = true;
+
 TEST_CASE("CLI argument parsing", "[cli]") {
 
     SECTION("All arguments provided") {
@@ -83,5 +85,57 @@ TEST_CASE("Blocked domains", "[blocked_domains]"){
     
     SECTION("Subomain is blocked"){
         REQUIRE((domain_blocked("video.youtube.com", blocked)) == true);
+    }
+}
+
+
+TEST_CASE("DNS message parsing", "[dns_message]"){
+    SECTION("Valid DNS query") {
+        // Dns query for test
+        uint8_t query[] = {
+            0x11, 0x11, // id
+            0x01, 0x00, // qr response
+            0x00, 0x01, // 1 question
+            0x00, 0x00, // answers 0
+            0x00, 0x00, // aythority 0
+            0x00, 0x00, // additional 0
+            0x04, 'm', 'e', 'o', 'w',
+            0x03, 'i', 's', 'a', // labels
+            0x00,       // null byte ending the name
+            0x00, 0x01, // type A
+            0x00, 0x01  // class IN
+        };
+        
+        REQUIRE_NOTHROW(parse_dns_query(query, sizeof(query)));
+        
+        DNSMessage msg = parse_dns_query(query, sizeof(query));
+        REQUIRE(msg.id == 0x1111);
+        REQUIRE(msg.question_count == 1);
+        REQUIRE(msg.question.query_name == "meow.isa");
+        REQUIRE(msg.question.query_type == 1);
+        REQUIRE(msg.question.query_class == 1);
+    }
+    
+    SECTION("Query too short") {
+        uint8_t query[] = {0x12, 0x34, 0x01, 0x00}; 
+        REQUIRE_THROWS(parse_dns_query(query, sizeof(query)));
+    }
+    
+    SECTION("Multiple questions rejected") {
+        uint8_t query[] = {
+            0x22, 0x22, // id
+            0x01, 0x00, // qr response
+            0x00, 0x05, // 5 questions
+            0x00, 0x00, // answers 0
+            0x00, 0x00, // aythority 0
+            0x00, 0x00, // additional 0
+            0x04, 'm', 'e', 'o', 'w',
+            0x03, 'i', 's', 'a', // labels
+            0x00,       // null byte ending the name
+            0x00, 0x01, // type A
+            0x00, 0x01  // class IN
+        };
+
+        REQUIRE_THROWS(parse_dns_query(query, sizeof(query)));
     }
 }

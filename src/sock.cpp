@@ -3,9 +3,6 @@
 
 
 Client::Client(int port, std::string server_address, const std::vector<std::string>& blocked) : blocked_domains(blocked), upstream_server(server_address), upstream_port(53) {
-    // printf_debug("Creating client sockets on port %d for server %s", port, server_address.c_str());
-
-    
 
     // Create IPv4 socket
     sockipv4 = socket(AF_INET, SOCK_DGRAM, 0);
@@ -85,20 +82,21 @@ void Client::send_refused(const DNSMessage& message, const sockaddr_storage& cli
     uint8_t response[512];
     size_t pos = 0;
 
-    // Header - copy ID from original query
+    // copies id from the original query
     response[pos++] = (message.id >> 8) & 0xFF;
     response[pos++] = message.id & 0xFF;
 
-    // Flags: QR=1 (response), OPCODE=0, AA=0, TC=0, RD=1, RA=0, Z=0, RCODE=5 (REFUSED)
+    // Flags: QR=1, OPCODE=0, AA=0, TC=0, RD=1, RA=0, Z=0, RCODE=5
+    // Response and refused
     // 1000 0001 0000 0101 = 0x8105
     response[pos++] = 0x81;
     response[pos++] = 0x05;
 
-    // Question count (same as query)
+    // Question count (will always be just 1 as the forum says)
     response[pos++] = (message.question_count >> 8) & 0xFF;
     response[pos++] = message.question_count & 0xFF;
 
-    // Answer, Authority, Additional counts = 0
+    // sets answer, authority and additional counts to 0
     response[pos++] = 0x00;
     response[pos++] = 0x00;
     response[pos++] = 0x00;
@@ -160,7 +158,7 @@ void Client::forward_to_upstream(const uint8_t* query, size_t query_len, const s
     server_addr.sin_port = htons(upstream_port);
     
     if (inet_pton(AF_INET, upstream_server.c_str(), &server_addr.sin_addr) != 1) {
-        printf_debug("Invalid upstream server address");
+        throw std::runtime_error("Invalid upstream server address");
         return;
     }
 
@@ -204,6 +202,7 @@ void Client::handle_client(int sock) {
     struct sockaddr_storage client_addr;
     socklen_t addr_len = sizeof(client_addr);
 
+    // Receive packet form client
     ssize_t n = recvfrom(sock, buffer, sizeof(buffer), 0, (struct sockaddr*)&client_addr, &addr_len);
     if (n < 0) return;
 
@@ -211,29 +210,34 @@ void Client::handle_client(int sock) {
     char addr_str[INET6_ADDRSTRLEN];
     uint16_t port = 0;
 
+    // Checks if the query is sent from ipv4 of ipv6 interface and sets the structure for sending
     if (client_addr.ss_family == AF_INET) {
         struct sockaddr_in *a = (struct sockaddr_in*)&client_addr;
         inet_ntop(AF_INET, &a->sin_addr, addr_str, sizeof(addr_str));
         port = ntohs(a->sin_port);
-        printf("[IPv4] From %s:%u — %zd bytes\n", addr_str, port, n);
+        printf_debug("[IPv4] From %s:%u — %zd bytes\n", addr_str, port, n);
     } else if (client_addr.ss_family == AF_INET6) {
         struct sockaddr_in6 *a6 = (struct sockaddr_in6*)&client_addr;
         inet_ntop(AF_INET6, &a6->sin6_addr, addr_str, sizeof(addr_str));
         port = ntohs(a6->sin6_port);
-        printf("[IPv6] From [%s]:%u — %zd bytes\n", addr_str, port, n);
+        printf_debug("[IPv6] From [%s]:%u — %zd bytes\n", addr_str, port, n);
     } else {
-        printf("Unknown address family\n");
+        printf_debug("Unknown address family\n");
         return;
     }
 
+    // parses the message from the client
     DNSMessage message = parse_dns_query(buffer, n);
 
+    // compares the query name from the client's message with the blocked domains
     bool is_blocked = domain_blocked(message.question.query_name, blocked_domains);
     
     if (is_blocked) {
+        // If the domain is blocked sends refused
         printf_debug("Domain %s is BLOCKED", message.question.query_name.c_str());
         send_refused(message, client_addr, addr_len, sock);
     } else {
+        // If the domain is not blocked forwards the message to the upstream dns server
         printf_debug("Domain %s is ALLOWED, forwarding to upstream", 
                     message.question.query_name.c_str());
         forward_to_upstream(buffer, n, client_addr, addr_len, sock);    
