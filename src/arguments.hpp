@@ -1,5 +1,11 @@
-#pragma once
+/**
+ * Author:  Rastislav Uhliar
+ * Login:   xuhliar00 
+ *
+ * Usage:   Structure that parses arguments from command line 
+**/
 
+#pragma once
 
 #include <iostream>
 #include <vector>

@@ -1,12 +1,18 @@
-#include "arguments.hpp"
+/**
+ * Author:  Rastislav Uhliar
+ * Login:   xuhliar00 
+ *
+ * Usage: Implementation for header file arguments.hpp
+**/
 
+#include "arguments.hpp"
 
 void Arguments::help() const {
     std::cout << "Usage: ./dns -s <server> [-p <port>] -f <filter_file> [-v] [-h]\n"
               << "Options:\n"
-              << "  -s <name>       IP Address or DNS server domain name\n"
+              << "  -s <name>       IP Address or hostname of upstream DNS resolver\n"
               << "  -p <port>       Port number on what the program will receive queries (default: 53)\n"
-              << "  -f <file>       Specify the input file of unwanted domains\n"
+              << "  -f <file>       Specify the input file of blocked domains\n"
               << "  -h              Show this help message\n"
               << "  -v              Show debug information (verbose mode)\n" << std::endl;
 }
@@ -109,4 +115,5 @@ void Arguments::load_domains(const std::string& filename) {
 
         blocked_domains.push_back(line);
     }
+    file.close();
 }

@@ -6,7 +6,7 @@ TEST_BIN = tests/unit_tests
 
 SRCS = src/arguments.cpp src/dns.cpp src/dnsmessage.cpp src/sock.cpp
 TEST_SRC = tests/tests.cpp
-TEST_SRCS = src/arguments.cpp src/dnsmessage.cpp src/sock.cpp
+TEST_SRCS = src/arguments.cpp src/dnsmessage.cpp src/sock.cpp tests/catch_amalgamated.cpp
 
 .PHONY: all run clean test
 

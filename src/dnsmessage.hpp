@@ -1,3 +1,10 @@
+/**
+ * Author:  Rastislav Uhliar
+ * Login:   xuhliar00 
+ *
+ * Usage: DNSMessage structure that is returned after parsing the dns query and domain_blocked function that checks if the domain is blocked
+**/
+
 #pragma once
 #include <cstdint>
 #include <vector>

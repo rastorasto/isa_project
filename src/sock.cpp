@@ -1,6 +1,11 @@
+/**
+ * Author:  Rastislav Uhliar
+ * Login:   xuhliar00 
+ *
+ * Usage: Implementation for header file sock.hpp
+**/
+
 #include "sock.hpp"
-
-
 
 Client::Client(int port, std::string server_address, const std::vector<std::string>& blocked) : blocked_domains(blocked), upstream_server(server_address), upstream_port(53) {
 

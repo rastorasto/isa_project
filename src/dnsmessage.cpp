@@ -1,3 +1,10 @@
+/**
+ * Author:  Rastislav Uhliar
+ * Login:   xuhliar00 
+ *
+ * Usage: Implementation for header file dnsmessage.hpp
+**/
+
 #include "dnsmessage.hpp"
 #include "macro.hpp"
 

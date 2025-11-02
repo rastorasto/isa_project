@@ -1,5 +1,14 @@
+/**
+ * Author:  Rastislav Uhliar
+ * Login:   xuhliar00 
+ *
+ * Usage: Unit tests
+**/
+
 #define CATCH_CONFIG_MAIN
-#include "catch.hpp"
+
+// #include "catch.hpp"
+#include "catch_amalgamated.hpp"
 #include "arguments.hpp"
 #include "dnsmessage.hpp"
 

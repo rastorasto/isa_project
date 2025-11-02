@@ -1,3 +1,10 @@
+/**
+ * Author:  Rastislav Uhliar
+ * Login:   xuhliar00 
+ *
+ * Usage: Main file that calls necessarry functions and creates all instances.
+**/
+
 #include <iostream>
 #include "arguments.hpp"
 #include "sock.hpp"

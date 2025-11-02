@@ -1,3 +1,10 @@
+/**
+ * Author:  Rastislav Uhliar
+ * Login:   xuhliar00 
+ *
+ * Usage: Handles client and communication with client and server with sockets.
+**/
+
 #pragma once
 #include "dnsmessage.hpp"
 #include "macro.hpp"
