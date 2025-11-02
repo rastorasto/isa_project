@@ -2,7 +2,7 @@
 
 
 void Arguments::help() const {
-    std::cout << "Usage: dns -s server [-p port] -f filter_file\n"
+    std::cout << "Usage: ./dns -s <server> [-p <port>] -f <filter_file> [-v] [-h]\n"
               << "Options:\n"
               << "  -s <name>       IP Address or DNS server domain name\n"
               << "  -p <port>       Port number on what the program will receive queries (default: 53)\n"
