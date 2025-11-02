@@ -7,7 +7,8 @@ void Arguments::help() const {
               << "  -s <name>       IP Address or DNS server domain name\n"
               << "  -p <port>       Port number on what the program will receive queries (default: 53)\n"
               << "  -f <file>       Specify the input file of unwanted domains\n"
-              << "  -h              Show this help message\n";
+              << "  -h              Show this help message\n"
+              << "  -v              Show debug information (verbose mode)\n" << std::endl;
 }
 
 Arguments::Arguments(int argc, char* argv[]) {
